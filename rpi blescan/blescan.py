@@ -175,7 +175,8 @@ def parse_events(sock, loop_count=100):
 		    	if(ratio < 1):
 		    		Adstring['distance'] = pow(ratio, 10)
 		    	else: Adstring['distance'] = (0.89976) * pow(ratio, 7.7095) + 0.111
- 		    	myFullList.append(Adstring)
+			if(Adstring['uuid'] == 'd283254fd42e44df9046e978ee4ae858'):
+				myFullList.append(Adstring)
                 done = True
     sock.setsockopt( bluez.SOL_HCI, bluez.HCI_FILTER, old_filter )
     return myFullList
