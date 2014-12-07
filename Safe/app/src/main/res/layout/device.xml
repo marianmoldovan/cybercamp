@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:padding="3dip"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="5dp"
+        android:id="@+id/imageView"
+        android:src="@drawable/beacon"
+        android:layout_gravity="center"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true"
+        android:layout_margin="8dip" />
+
+    <View
+        android:layout_marginBottom="8dp"
+        android:id="@+id/separator"
+        android:layout_marginTop="8dp"
+        android:layout_width="2px"
+        android:layout_height="28dp"
+        android:background="@color/grey_400"
+        android:layout_toStartOf="@+id/imageView2"
+        android:layout_centerVertical="true" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageView2"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:src="@drawable/ex"
+        android:padding="16dp" />
+
+    <Switch
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Beacon"
+        android:id="@+id/switch2"
+        android:layout_weight="1"
+        android:checked="true"
+        android:layout_centerVertical="true"
+        android:layout_alignEnd="@+id/separator"
+        android:layout_toEndOf="@+id/imageView"
+        android:layout_marginRight="5dp" />
+
+</RelativeLayout>
