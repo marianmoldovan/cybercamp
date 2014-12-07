@@ -11,6 +11,7 @@ function startOpenDNS(){
 		sudo service hostapd stop
 		sudo service isc-dhcp-server stop
 		sudo cp /etc/dhcp/dhcpd-opendns.conf /etc/dhcp/dhcpd.conf
+		sudo ifdown wlan0 && sudo ifup wlan0
 		sudo ifconfig wlan0 192.168.42.1
 		sudo service isc-dhcp-server start
 		sudo service hostapd start
@@ -22,6 +23,7 @@ function stopOpenDNS(){
 		sudo service hostapd stop
 		sudo service isc-dhcp-server stop
 		sudo cp /etc/dhcp/dhcpd-normal.conf /etc/dhcp/dhcpd.conf
+		sudo ifdown wlan0 && sudo ifup wlan0
 		sudo ifconfig wlan0 192.168.42.1 
 		sudo service isc-dhcp-server start
 		sudo service hostapd start
