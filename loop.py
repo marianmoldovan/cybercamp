@@ -3,22 +3,21 @@ import sys
 import bluetooth._bluetooth as bluez
 import time
 import pickledb
+import commands
+import requests
 
-
+from sensor import ZWay
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask import Flask, jsonify
 from server import Beacon
-app = Flask(__name__)
 
+
+#Sqlite acces
+app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///temp/test.db'
 db = SQLAlchemy(app)
 
-#sys.path.append('/home/pi/workspace/cybercamp')
-#import sensor
-
-#indicar movimiento 
-movimiento=False
-
+#Beacon init
 dev_id = 0
 try:
 	sock = bluez.hci_open_dev(dev_id)
@@ -29,7 +28,16 @@ except:
 blescan.hci_le_set_scan_parameters(sock)
 blescan.hci_enable_le_scan(sock)
 
+#ZWave sensors init
 pdb = pickledb.load('movements.db', False)
+z = ZWay()
+
+#sys.path.append('/home/pi/workspace/cybercamp')
+#import sensor
+
+def sensor():
+    return z.getMovement()
+
 
 def mashup(items):
 	item = {}
@@ -45,6 +53,7 @@ def mashup(items):
 	else:
 		return None
 
+
 def beacon_close():
 	returnedList = blescan.parse_events(sock, 10)
 	newlist = sorted(returnedList, key=lambda k: k['distance']) 
@@ -57,12 +66,32 @@ def beacon_close():
 				return True
 	return False
 
+def device_in_net():
+	ret = commands.getoutput("arp -an | grep cc:fa:00:f6:9b:d6")
+	return not (ret == '')
+
+beacon = False
+movimiento = False
+device = False
+
 while True:
 	# activate the sensor
-        	
 	# check the database for recent movements
 
-	movimiento = pdb.get('valor')
-	beacon = beacon_close()
+	newbeacon = beacon_close()
+	newmovimiento = sensor()
+	newdevice = device_in_net()
+
+	if((beacon != newbeacon) or (movimiento != newmovimiento) or (device != newdevice)):
+		print "Event"
+		payload = {'movimiento': newmovimiento, 'beacon': newbeacon, 'device': newdevice}
+		r = requests.get("http://localhost:8080/event", params=payload)
+		movimiento = newmovimiento
+		beacon = newbeacon
+		device = newdevice
+
+
+
+
 	
-	
+

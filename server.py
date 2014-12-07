@@ -7,12 +7,13 @@ from gcm import GCM
 import flask.ext.restless
 import json
 import time
+import commands
+import pickledb
 
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///temp/test.db'
 db = SQLAlchemy(app)
-#l8signals clear and init
 
 class Beacon(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -45,23 +46,38 @@ def send_entrada_salida():
 
 @app.route('/event', methods=['GET'])
 def get_events():
-   beacon = request.args.get('beacon',0,type=int)
-   device = request.args.get('device',0,type=int)
-   movement = request.args.get('movement', 0, type=int)
-   if(beacon == 0 and device == 0 and movement == 1):
+   pdb = pickledb.load('movements.db', False)
+   status = pdb.get('status')
+   beacon = request.args.get('beacon',False,type=bool)
+   device = request.args.get('device',False,type=bool)
+   movement = request.args.get('movement', False, type=bool)
+   if(not beacon and not device and movement and status != 0):
       send_intrusion()
       x8 = ELE8()
       x8.initial()
       x8.paint_d()
       time.sleep(5)
       x8.finalize()
-   elif(beacon == 1 or device == 1):
+      status = 0
+   elif(beacon or device):
+      if(not device and status != 2):
+        x = commands.getoutput("sudo bash changeDNS.sh -f")
+        status = 2
+      elif(status != 3):
+        x = commands.getoutput("sudo bash changeDNS.sh -o")
+        status = 3
+      else:
+        status = 1
       send_entrada_salida()
       x8 = ELE8()
       x8.initial()
       x8.paint_ok()
       time.sleep(5)
       x8.finalize()
+   else:
+      status = 4
+   pdb.set('status',status)
+   pdb.dump()
    return "Yeah"
 
 @app.route('/open', methods=['GET'])
@@ -80,5 +96,6 @@ manager.create_api(Beacon, methods=['GET', 'POST', 'DELETE'])
 
 
 if __name__ == '__main__':
+
     app.run(debug=True, host='0.0.0.0', port=8080)
 

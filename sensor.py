@@ -24,6 +24,16 @@ class ZWay:
         self.getDeviceDataURL_2 = '].instances[0].commandClasses[0x30].data'
 
 
+    def getMovement(self):
+        deviceN_=self.getDevices()
+        data=Render()
+        for deviceNum in deviceN_ :
+            info= self.getRequest(self.getDeviceDataURL_1+str(deviceNum)+self.getDeviceDataURL_2,'OK')
+            if (not info == None):
+                return info['1']['level']['value']
+        return False
+
+
     def performGetRequest(self):
 
         #search for connected devices
@@ -60,7 +70,6 @@ class ZWay:
 #	print data
 	    	data.initiate(info)
 	    	print "Movimiento detectado"
-	print "sin movimiento"
 #else:
 #     raise MyException(str(e)), None, sys.exc_info()[2]
 
@@ -71,7 +80,6 @@ class ZWay:
             for id_, item in jsonData['1'].iteritems():
                 if id_ == 'updateTime':
                     resp = item
-		    print item
         except Exception as e:
             print 'ERROR during updating the Sensor Time:'
             raise MyException(str(e)), None, sys.exc_info()[2]
@@ -99,7 +107,7 @@ class ZWay:
     def getRequest(self,direction,err):
         resp = None
         try:
-            print 'Sending a get request to: ',self.address+direction
+            #print 'Sending a get request to: ',self.address+direction
             response = requests.get(self.address+direction)
             result=response.status_code
             if (result == 200 and err != None):
@@ -121,7 +129,6 @@ class Render:
         self.db = pickledb.load('movements.db', False) 
         
         self.setSTime( 0)
-        print 'Processing the data'
 
     def setSTime(self,  value):
         self.db.set('valor', value)
@@ -132,7 +139,6 @@ class Render:
         return algo    
 
     def initiate(self, sensorData):
-        print 'initiate sensorData'
         try:
             for i in range (self.MINFIELDS,self.MAXFIELDS):
                 if str(i) in sensorData:
@@ -162,18 +168,10 @@ class Render:
 	    tiempo=0;
 	    valor="false";
             for id_, item in data[position].iteritems():
-                if id_ == 'sensorTypeString':
-                    print self.getValue(item)                  
-                elif id_ == 'level':
+                if not (id_ == 'sensorTypeString') and  id_ == 'level':
                     valor= self.getValue(item)
                     tiempo= self.getTime(item)
-		    print tiempo
-                elif id_ == 'scaleString':
-                    print self.getValue(item)
-           # if (self.getValue is "true") and (tiempo >= self.getSTime()):
-	    print ("valor: ", valor)
             self.setSTime(valor)
-            print ("zegundoz", self.getSTime())
         except Exception as e:
             raise MyException(str(e)), None, sys.exc_info()[2]
             return None
@@ -210,25 +208,3 @@ class Render:
 #own type of exception
 class MyException(Exception): pass        
 
-
-    
-    
-
-print '**********  Spring newtwork ***********\n'
-
-#Test class instances
-
-#inI=Initial()
-#inI.initiate()
-
-#reads the server ip from config file
-#z = ZWay(FileManager().readFileKeys("ip"))
-#z = ZWay("http://192.168.1.147:8083/")
-#z = ZWay()
-#while True:
-#    z.performGetRequest()
-#    time.sleep(2)
-	
-#request to server
-#resp = z.performGetRequest()
-print '\n **********  Spring newtwork ***********\n'
