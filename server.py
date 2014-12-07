@@ -1,16 +1,18 @@
 #!flask/bin/python
+from l8Signals import ELE8
 from flask import Flask, jsonify
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask import request
 from gcm import GCM
 import flask.ext.restless
 import json
+import time
 
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///temp/test.db'
 db = SQLAlchemy(app)
-
+#l8signals clear and init
 
 class Beacon(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -40,21 +42,36 @@ def send_intrusion():
 def send_entrada_salida():
   send_push('Acceso', 'Alguien conocido ha entrado en casa')
 
-@app.route('/beaconX/api/', methods=['GET'])
-def get_beacons():
-    b = Beacon("aaaaaa", dd1, 1)
-    return json.dumps(Beacon.query.all().__dict__)
 
 @app.route('/event', methods=['GET'])
 def get_events():
    beacon = request.args.get('beacon',0,type=int)
    device = request.args.get('device',0,type=int)
    movement = request.args.get('movement', 0, type=int)
-   send_intrusion()
-   return 'Yeah'
+   if(beacon == 0 and device == 0 and movement == 1):
+      send_intrusion()
+      x8 = ELE8()
+      x8.initial()
+      x8.paint_d()
+      time.sleep(5)
+      x8.finalize()
+   elif(beacon == 1 or device == 1):
+      send_entrada_salida()
+      x8 = ELE8()
+      x8.initial()
+      x8.paint_ok()
+      time.sleep(5)
+      x8.finalize()
+   return "Yeah"
 
 @app.route('/open', methods=['GET'])
 def get_open():
+   send_entrada_salida()
+   x8 = ELE8()
+   x8.initial()
+   x8.paint_ok()
+   time.sleep(5)
+   x8.finalize()
    return 'Yeah'
 
 manager = flask.ext.restless.APIManager(app, flask_sqlalchemy_db=db)
@@ -64,5 +81,4 @@ manager.create_api(Beacon, methods=['GET', 'POST', 'DELETE'])
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8080)
-
 
