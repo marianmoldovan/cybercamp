@@ -7,14 +7,15 @@ import json
 import sys
 import pickle
 import pickledb 
+import l8Signals
 
 #class made to recover from z-way-server the sensor data
 #gets the ip addres
 #returns the data
 class ZWay:
-    def __init__(self, address):
+    def __init__(self):
         #server ip & port:
-        self.address = address
+        self.address = "http://192.168.1.147:8083/"
 
         #constants values of the ZWaveAPI
         self.getAllDataURL = 'ZWaveAPI/Data/0'
@@ -33,34 +34,35 @@ class ZWay:
         #for each one of the devices try to pull data
         for deviceNum in deviceN_ :        
             #obtains last updateTime from the sensor
-            timeStam = data.getSensorUpdateTime(self.getRequest(self.getDeviceDataURL_1+str(deviceNum)+self.getDeviceDataURL_2,'OK'))
+            
+	    #timeStam = data.getSensorUpdateTime(self.getRequest(self.getDeviceDataURL_1+str(deviceNum)+self.getDeviceDataURL_2,'OK'))
             
             #inquires the devices for new data
-            self.getRequest(self.getDeviceDataURL_1+str(deviceNum)+self.getInquireURL,None)
+            #self.getRequest(self.getDeviceDataURL_1+str(deviceNum)+self.getInquireURL,None)
             
             #obtains again the updateTime from sensor
-            timeStam2 = data.getSensorUpdateTime(self.getRequest(self.getDeviceDataURL_1+str(deviceNum)+self.getDeviceDataURL_2,'OK'))
+            #timeStam2 = data.getSensorUpdateTime(self.getRequest(self.getDeviceDataURL_1+str(deviceNum)+self.getDeviceDataURL_2,'OK'))
             #print 'inital time stamp: ',timeStam, ' actual time: ',time.time(), ' update time:',timeStam2
             #while the data has not been updated wait for 1 minute
-            info = None
-	    print ("timeStam ", timeStam, ">= timeStam2", timeStam2)
-            while (timeStam >= timeStam2):
+            #info = None
+	    #print ("timeStam ", timeStam, ">= timeStam2", timeStam2)
+	    
+            #while (timeStam >= timeStam2):
+            #if (timeStam != timeStam2):
                 #enquires again for UpdateTime
-                print "waiting for sensor response..."
+       #         print "waiting for sensor response..."
 
-                time.sleep(10)
-                info= self.getRequest(self.getDeviceDataURL_1+str(deviceNum)+self.getDeviceDataURL_2,'OK')
-                timeStam2 = data.getSensorUpdateTime(info)
-            
-
+             #   time.sleep(10)
             info= self.getRequest(self.getDeviceDataURL_1+str(deviceNum)+self.getDeviceDataURL_2,'OK')
-            #new instances of the render clas that will be entitled to feed the Spring api server with the proper data
-            if (not info == None):
-		print data
-                data.initiate(info)
-            #else:
-            #     raise MyException(str(e)), None, sys.exc_info()[2]
-
+             #timeStam2 = data.getSensorUpdateTime(info)
+             #new instances of the render clas that will be entitled to feed the Spring api server with the proper data
+	    if (not info == None):
+#	print data
+	    	data.initiate(info)
+	    	print "Movimiento detectado"
+	print "sin movimiento"
+#else:
+#     raise MyException(str(e)), None, sys.exc_info()[2]
 
 
     def getSensorUpdateTime(self,jsonData):
@@ -122,11 +124,11 @@ class Render:
         print 'Processing the data'
 
     def setSTime(self,  value):
-        self.db.set('tLastMove', value)
+        self.db.set('valor', value)
         self.db.dump()
 
     def getSTime(self):
-	algo=self.db.get('tLastMove')
+	algo=self.db.get('valor')
         return algo    
 
     def initiate(self, sensorData):
@@ -169,9 +171,9 @@ class Render:
                 elif id_ == 'scaleString':
                     print self.getValue(item)
            # if (self.getValue is "true") and (tiempo >= self.getSTime()):
-            if tiempo >= self.getSTime() and valor is "true":
-		 self.setSTime(tiempo)
-                 print ("zegundoz", self.getSTime())
+	    print ("valor: ", valor)
+            self.setSTime(valor)
+            print ("zegundoz", self.getSTime())
         except Exception as e:
             raise MyException(str(e)), None, sys.exc_info()[2]
             return None
@@ -221,7 +223,12 @@ print '**********  Spring newtwork ***********\n'
 
 #reads the server ip from config file
 #z = ZWay(FileManager().readFileKeys("ip"))
-z = ZWay("http://192.168.1.147:8083/")
+#z = ZWay("http://192.168.1.147:8083/")
+#z = ZWay()
+#while True:
+#    z.performGetRequest()
+#    time.sleep(2)
+	
 #request to server
-resp = z.performGetRequest()
+#resp = z.performGetRequest()
 print '\n **********  Spring newtwork ***********\n'
